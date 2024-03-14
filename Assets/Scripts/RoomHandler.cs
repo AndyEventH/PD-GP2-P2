@@ -95,6 +95,11 @@ public class RoomHandler : MonoBehaviour
                 else
                 {
                     Debug.Log("Ignored side hit " + angle);
+                   
+                        DestroyImmediate(gameObject);
+                
+
+                    
                     return false;
                 }
             }

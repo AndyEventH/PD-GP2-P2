@@ -71,29 +71,31 @@ public class RoomGenerator : EditorWindow
             GameObject currentPrefab = prefabs[prefabIndex];
             Texture currentPrefabIcon = AssetPreview.GetAssetPreview(currentPrefab);
             EditorGUI.BeginChangeCheck();
-
+            bool wasSelected = selectedPrefabs[prefabIndex];
             selectedPrefabs[prefabIndex] = GUI.Toggle(prefabToggleRect, selectedPrefabs[prefabIndex], new GUIContent(currentPrefab.name, currentPrefabIcon));
 
-            if(EditorGUI.EndChangeCheck())
-{
-                room = null;
-                selTog = -1; 
-                for (int selectionIndex = 0; selectionIndex < selectedPrefabs.Length; selectionIndex++)
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (selectedPrefabs[prefabIndex] && !wasSelected)
                 {
-                    if (selectedPrefabs[selectionIndex])
+                    room = currentPrefab.transform;
+                    selTog = prefabIndex;
+                    for (int otherIndex = 0; otherIndex < selectedPrefabs.Length; otherIndex++)
                     {
-                        if (prefabIndex != selTog)
+                        if (otherIndex != prefabIndex)
                         {
-                            selectedPrefabs[selectionIndex] = true;
-                            if (selTog != -1) selectedPrefabs[selTog] = false;
-                            selTog = selectionIndex;
-                            room = prefabs[selectionIndex].transform;
+                            selectedPrefabs[otherIndex] = false;
                         }
                     }
                 }
-                SceneView.RepaintAll(); 
-            }
+                else if (!selectedPrefabs[prefabIndex] && wasSelected)
+                {
+                    room = null;
+                    selTog = -1;
+                }
 
+                SceneView.RepaintAll();
+            }
 
             prefabToggleRect.y += prefabToggleRect.height + 2;
         }
@@ -167,8 +169,10 @@ public class RoomGenerator : EditorWindow
         spawnedObject.transform.SetPositionAndRotation(position, currentRotation);
         Undo.RegisterCreatedObjectUndo(spawnedObject, "Spawn Prefab");
         moves++;
-
+        try
+        { 
         spawnedObject.GetComponent<RoomHandler>().RoomCheck();
+        }catch (MissingReferenceException){}
     }
 
 
